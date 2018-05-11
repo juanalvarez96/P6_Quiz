@@ -168,7 +168,7 @@ exports.randomPlay = (req, res, next) => {
                 res.render('quizzes/random_nomore', {score: score})
             }
             //Partida empieza
-            if (req.session.score === undefined) {
+            if (req.session.score === undefined || req.session.randomPlay || [].length===0) {
                 req.session.score = 0;
                 for (i = 0; i < quizzes.length; i++) {
                     toBeResolved[i] = quizzes[i].id;
@@ -180,8 +180,8 @@ exports.randomPlay = (req, res, next) => {
                 toBeResolved.splice(indice, 1);
                 req.session.randomPlay=toBeResolved;
                 let score = req.session.score;
-                let quiz = quizzes[id];
-                validateQuiz(quiz)
+                console.log("El id del quiz: "+ id+ " y el array es: "+ toBeResolved);
+                validateId(id)
                     .then(quiz => {
                         res.render('quizzes/random_play', {
                             score: score,
@@ -191,6 +191,7 @@ exports.randomPlay = (req, res, next) => {
                     })
                     .catch(error => {
                         console.log(error);
+                        console.log(quiz);
                     })
 
 
@@ -203,8 +204,9 @@ exports.randomPlay = (req, res, next) => {
                 toBeResolved.splice(indice, 1);
                 req.session.randomPlay=toBeResolved;
                 let score = req.session.score;
-                let quiz = quizzes[id];
-                validateQuiz(quiz)
+                console.log("Aqui estoy en durante la partida");
+                console.log("El id del quiz: "+ id+ " y el array es: "+ toBeResolved);
+                validateId(id)
                     .then(quiz => {
                         res.render('quizzes/random_play', {
                             score: score,
@@ -214,6 +216,8 @@ exports.randomPlay = (req, res, next) => {
                     })
                     .catch(error => {
                         console.log(error);
+                        console.log(error);
+                        console.log(quiz);
                     })
             }
         })
@@ -255,22 +259,20 @@ exports.randomCheck = (req, res, next) => {
 };
 
 
-const playFirst = (req, res, next) => {
-    req.session.ind1 = true; //Dice si hay que resetear el array
-    req.session.ind2 = true; //Dice si la puntuación es cero
-};
 
-const resetScore = (req, res, next) => {
-    req.session.score = 0;
-};
-const validateQuiz = quiz => {
+const validateId = id => {
     return new Sequelize.Promise((resolve, reject) => {
-        if (typeof quiz === "undefined") {
-            reject(new Error(`Quiz no existe`));
-        } else {
-                resolve(quiz); //Se resuelve la promesa con el id correcto.
+        models.quiz.findById(id)
+            .then(quiz => {
+                if (!quiz) {
+                    reject(new Error(`Quiz no existe`));
+                } else {
+                    resolve(quiz); //Se resuelve la promesa con el id correcto.
 
-        }
+                }
+            })
+
+
     });
 };
 
