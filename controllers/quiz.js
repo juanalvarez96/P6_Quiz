@@ -162,7 +162,7 @@ exports.randomPlay = (req, res, next) => {
             let numberQuizzes = quizzes.length;
             console.log(numberQuizzes);
             //El jugador gana
-            if (req.session.score >= numberQuizzes - 1) {
+            if (req.session.score >= numberQuizzes) {
                 let score = req.session.score;
                 req.session.score=undefined;
                 res.render('quizzes/random_nomore', {score: score})
