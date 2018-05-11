@@ -168,7 +168,7 @@ exports.randomPlay = (req, res, next) => {
                 res.render('quizzes/random_nomore', {score: score})
             }
             //Partida empieza
-            if (req.session.score === undefined || req.session.randomPlay || [].length===0) {
+            if (req.session.score === undefined) {
                 req.session.score = 0;
                 for (i = 0; i < quizzes.length; i++) {
                     toBeResolved[i] = quizzes[i].id;
@@ -198,8 +198,14 @@ exports.randomPlay = (req, res, next) => {
             }
             //Durante la partida
             else{
-                let indice = Math.floor(Math.random() * toBeResolved.length);
                 toBeResolved=req.session.randomPlay;
+                if(toBeResolved.length===0){
+                    for (i = 0; i < quizzes.length; i++) {
+                        toBeResolved[i] = quizzes[i].id;
+                    }
+                }
+                console.log(toBeResolved);
+                let indice = Math.floor(Math.random() * toBeResolved.length);
                 let id = toBeResolved[indice];
                 toBeResolved.splice(indice, 1);
                 req.session.randomPlay=toBeResolved;
