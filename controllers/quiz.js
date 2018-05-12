@@ -157,74 +157,63 @@ exports.check = (req, res, next) => {
 //GET /quizzes/randomplay
 exports.randomPlay = (req, res, next) => {
     let toBeResolved = [];
-    models.quiz.findAll()
+    let score;
+    hayQuizzes()
         .then(quizzes => {
-            let numberQuizzes = quizzes.length;
-            console.log(numberQuizzes);
-            //El jugador gana
-            if (req.session.score >= numberQuizzes) {
-                let score = req.session.score;
-                req.session.score=undefined;
-                res.render('quizzes/random_nomore', {score: score})
-            }
-            //Partida empieza
+            //Primera vez que se juega
+            console.log( "score " +req.session.score);
+            console.log(req.session.randomPlay);
             if (req.session.score === undefined) {
                 req.session.score = 0;
                 for (i = 0; i < quizzes.length; i++) {
                     toBeResolved[i] = quizzes[i].id;
                 }
-                //Ya está todo declarado
-                req.session.randomPlay=toBeResolved;
+                score=req.session.score;
+                req.session.randomPlay = toBeResolved;
                 let indice = Math.floor(Math.random() * toBeResolved.length);
                 let id = toBeResolved[indice];
                 toBeResolved.splice(indice, 1);
-                req.session.randomPlay=toBeResolved;
-                let score = req.session.score;
-                console.log("El id del quiz: "+ id+ " y el array es: "+ toBeResolved);
+                req.session.randomPlay = toBeResolved;
                 validateId(id)
                     .then(quiz => {
                         res.render('quizzes/random_play', {
                             score: score,
-                            quiz:quiz
+                            quiz: quiz
 
                         })
                     })
                     .catch(error => {
-                        console.log(error);
-                        console.log(quiz);
+                        //Acción a ejecutar en caso de error
+                        console.log("Error")
                     })
+            }
+            //Seguir jugando
+            if(req.session.score<quizzes.length){
+                toBeResolved=req.session.randomPlay;
+                score=req.session.score;
+                let indice = Math.floor(Math.random() * toBeResolved.length);
+                let id = toBeResolved[indice];
+                toBeResolved.splice(indice, 1);
+                req.session.randomPlay = toBeResolved;
+                validateId(id)
+                    .then(quiz => {
+                        res.render('quizzes/random_play', {
+                            score: score,
+                            quiz: quiz
 
+                        })
+                    })
+                    .catch(error => {
+                        //Acción a ejecutar en caso de error
+                        console.log("Error")
+                    })
 
             }
-            //Durante la partida
-            else{
-                toBeResolved=req.session.randomPlay;
-                if(toBeResolved.length===0){
-                    for (i = 0; i < quizzes.length; i++) {
-                        toBeResolved[i] = quizzes[i].id;
-                    }
-                }
-                console.log(toBeResolved);
-                let indice = Math.floor(Math.random() * toBeResolved.length);
-                let id = toBeResolved[indice];
-                toBeResolved.splice(indice, 1);
-                req.session.randomPlay=toBeResolved;
-                let score = req.session.score;
-                console.log("Aqui estoy en durante la partida");
-                console.log("El id del quiz: "+ id+ " y el array es: "+ toBeResolved);
-                validateId(id)
-                    .then(quiz => {
-                        res.render('quizzes/random_play', {
-                            score: score,
-                            quiz:quiz
+            if(req.session.score>=quizzes.length){
+                score = req.session.score;
+                req.session.score=undefined;
+                res.render('quizzes/random_nomore', {score: score})
 
-                        })
-                    })
-                    .catch(error => {
-                        console.log(error);
-                        console.log(error);
-                        console.log(quiz);
-                    })
             }
         })
 
@@ -234,36 +223,33 @@ exports.randomPlay = (req, res, next) => {
 
 //GET /quizzes/random_check/:quizId
 exports.randomCheck = (req, res, next) => {
-    let score = req.session.score;
     const {quiz, query} = req;
+
     const answer = query.answer || "";
     const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
-    //Respuesta correcta
-    if (result) {
-        score++;
-        req.session.score = score;
-        res.render('quizzes/random_result', {
-            score: score,
-            result: result,
-            answer: answer
-        });
-    }
-    //respuesta incorrecta
-    else {
 
-        //Score cmabia para la siguiente partida a cero
-        req.session.score = undefined;
-        //Volvemos a actualizar el array de preguntas
-        res.render('quizzes/random_result', {
-            score: score,
-            result: result,
-            answer: answer
-        })
+    let score;
+
+    if(result){
+        //Jugador acierta
+        req.session.score++;
+        score = req.session.score;
+
     }
+    else {
+        score=req.session.score;
+        req.session.score=0;
+
+    }
+
+    res.render('quizzes/random_result', {
+        score:score,
+        result:result,
+        answer:answer
+    });
 
 
 };
-
 
 
 const validateId = id => {
@@ -281,6 +267,25 @@ const validateId = id => {
 
     });
 };
+
+const hayQuizzes = () => {
+    return new Sequelize.Promise((resolve, reject) => {
+        models.quiz.findAll()
+            .then(quizzes => {
+                if (quizzes.length > 0) {
+                    resolve(quizzes);
+                }
+                else {
+                    reject(new Error("No quizzes"));
+                }
+            })
+    });
+};
+
+
+
+
+
 
 
 
