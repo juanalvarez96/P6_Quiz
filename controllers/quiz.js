@@ -158,6 +158,7 @@ exports.check = (req, res, next) => {
 exports.randomPlay = (req, res, next) => {
     let toBeResolved = [];
     let score;
+    let ind = false;
     hayQuizzes()
         .then(quizzes => {
             //Primera vez que se juega
@@ -171,16 +172,21 @@ exports.randomPlay = (req, res, next) => {
                 score=req.session.score;
                 req.session.randomPlay = toBeResolved;
                 let indice = Math.floor(Math.random() * toBeResolved.length);
+                console.log("aquí estoy en primera vez");
+                console.log(toBeResolved+ " Este es el array de indicces");
+                console.log("Esto es indice que se va a BORRAR "+ indice);
                 let id = toBeResolved[indice];
+                console.log("esto es el id que se escoge de el array "+ id);
                 toBeResolved.splice(indice, 1);
                 req.session.randomPlay = toBeResolved;
+                ind = true;
                 validateId(id)
                     .then(quiz => {
+                        console.log("Entramos en renderizar de nueva partida");
                         res.render('quizzes/random_play', {
                             score: score,
                             quiz: quiz
-
-                        })
+                        });
                     })
                     .catch(error => {
                         //Acción a ejecutar en caso de error
@@ -188,15 +194,20 @@ exports.randomPlay = (req, res, next) => {
                     })
             }
             //Seguir jugando
-            if(req.session.score<quizzes.length){
+            if((req.session.score<quizzes.length) && (ind===false)){
                 toBeResolved=req.session.randomPlay;
                 score=req.session.score;
                 let indice = Math.floor(Math.random() * toBeResolved.length);
+                console.log(toBeResolved+ " Este es el array de indicces");
+                console.log("Esto es indice que se va a borrar "+ indice);
                 let id = toBeResolved[indice];
+                console.log("esto es el id que se escoge de el array "+ id);
                 toBeResolved.splice(indice, 1);
+                console.log("asi queda el array una vez elimino indice "+ toBeResolved);
                 req.session.randomPlay = toBeResolved;
                 validateId(id)
                     .then(quiz => {
+                        console.log("Entramos en renderizar de seguir jugando");
                         res.render('quizzes/random_play', {
                             score: score,
                             quiz: quiz
@@ -214,6 +225,12 @@ exports.randomPlay = (req, res, next) => {
                 req.session.score=undefined;
                 res.render('quizzes/random_nomore', {score: score})
 
+            }
+            else{
+                console.log("no he entrado en nada");
+                console.log("Score va a ser "+ req.session.score);
+                console.log("Ind va a ser "+ ind);
+                console.log("quizzes length va a ser "+ quizzes.length);
             }
         })
 
