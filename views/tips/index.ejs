@@ -18,6 +18,10 @@
                         <button>Accept</button>
                     </a>
 
+                <div class="right">
+                    <small> (by <%= tip.author ? tip.author.username : "Anonymous" %>) </small>
+                </div>
+
                 <% } %>
 
                 <% if (isAdmin || isQuizAuthor) { %>
