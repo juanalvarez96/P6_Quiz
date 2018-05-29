@@ -121,6 +121,15 @@ router.delete('/quizzes/:quizId(\\d+)',
     quizController.adminOrAuthorRequired,
 	quizController.destroy);
 
+router.get('/quizzes/:quizId(\\d+)/tips/:tipId(\\d+)/edit',
+    tipController.loginRequired,
+    tipController.adminOrAuthorRequired,
+	tipController.edit);
+router.post('/quizzes/:quizId(\\d+)/tips/:tipId(\\d+)',
+    tipController.loginRequired,
+    tipController.adminOrAuthorRequired,
+	tipController.update);
+
 router.get('/quizzes/:quizId(\\d+)/play',  quizController.play);
 router.get('/quizzes/:quizId(\\d+)/check', quizController.check);
 

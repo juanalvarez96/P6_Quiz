@@ -97,6 +97,7 @@ exports.adminAndNotMyselfRequired = function(req, res, next){
 };
 
 
+
 /*
  * User authentication: Checks that the user is registered.
  *
